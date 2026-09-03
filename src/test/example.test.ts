@@ -1,4 +1,4 @@
-/* globals describe, it, expect */
+import { describe, expect, it } from 'vitest';
 
 describe('addition ', () => {
   it('should work', () => {

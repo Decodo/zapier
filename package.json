@@ -3,15 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "jest --testTimeout 10000"
+    "test": "npm run build && vitest --run",
+    "clean": "rimraf ./dist ./build",
+    "build": "npm run clean && tsc",
+    "dev": "npm run build -- --watch",
+    "_zapier-build": "npm run build"
   },
   "dependencies": {
     "zapier-platform-core": "19.1.0"
   },
   "devDependencies": {
-    "jest": "^29.6.0"
+    "rimraf": "^5.0.10",
+    "typescript": "5.6.2",
+    "vitest": "^2.1.2"
   },
   "private": true,
-  "exports": "./index.js",
+  "exports": "./dist/index.js",
   "type": "module"
 }
