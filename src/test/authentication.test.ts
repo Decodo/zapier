@@ -5,7 +5,7 @@ import App from '../index.js';
 const appTester = zapier.createAppTester(App);
 zapier.tools.env.inject();
 
-const token = process.env.DECODO_TOKEN;
+const token = process.env.authData_token;
 const describeIfToken = token ? describe : describe.skip;
 
 describeIfToken('custom auth', () => {
