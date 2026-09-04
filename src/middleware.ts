@@ -14,7 +14,7 @@ const includeAuthHeader: BeforeRequestMiddleware = (request, _z, bundle) => {
 
   request.headers = {
     ...request.headers,
-    Authorization: `Basic ${token}`,
+    Authorization: `Bearer ${token}`,
     'x-integration': INTEGRATION_NAME,
   };
 
