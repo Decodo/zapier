@@ -6,7 +6,7 @@ import type { ScrapingEntry, SyncResponse } from '../types.js';
 type InputData = {
   url: string;
   markdown?: boolean;
-  render_javascript?: boolean;
+  headless?: string;
   geo?: string;
   device_type?: string;
 };
@@ -15,8 +15,7 @@ const perform = async (
   z: ZObject,
   bundle: Bundle<InputData>,
 ): Promise<ScrapingEntry> => {
-  const { url, markdown, render_javascript, geo, device_type } =
-    bundle.inputData;
+  const { url, markdown, headless, geo, device_type } = bundle.inputData;
 
   const response = await apiRequest<SyncResponse>(z, {
     path: '/v2/scrape',
@@ -24,7 +23,7 @@ const perform = async (
       target: 'universal',
       url,
       ...(markdown ? { markdown: true } : {}),
-      ...(render_javascript ? { headless: 'html' } : {}),
+      ...(headless ? { headless } : {}),
       ...(geo ? { geo } : {}),
       ...(device_type ? { device_type } : {}),
     },
@@ -74,13 +73,13 @@ export default defineCreate({
           'Return clean markdown instead of raw HTML. Best for feeding the result to an AI step.',
       },
       {
-        key: 'render_javascript',
-        label: 'Render JavaScript',
-        type: 'boolean',
+        key: 'headless',
+        label: 'Headless',
+        type: 'string',
         required: false,
-        default: 'no',
+        choices: { html: 'HTML', png: 'Screenshot (PNG)' },
         helpText:
-          'Load the page in a browser first. Needed for sites that build their content with JavaScript. Slower.',
+          "Load the page in a real browser first. `HTML` runs the page's JavaScript and returns the rendered markup. `Screenshot` returns a PNG image instead. Leave empty to fetch without a browser, which is faster.",
       },
       {
         key: 'geo',
