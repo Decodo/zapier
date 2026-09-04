@@ -1,7 +1,8 @@
-import packageJson from './package.json' with { type: 'json' };
-import zapier from 'zapier-platform-core';
+import zapier, { defineApp } from 'zapier-platform-core';
 
-export default {
+import packageJson from '../package.json' with { type: 'json' };
+
+export default defineApp({
   // This is just shorthand to reference the installed dependencies you have.
   // Zapier will need to know these before we can upload.
   version: packageJson.version,
@@ -17,4 +18,4 @@ export default {
   creates: {},
 
   resources: {},
-};
+});
