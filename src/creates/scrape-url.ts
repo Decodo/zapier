@@ -1,7 +1,9 @@
+import { DecodoClient, Target } from '@decodo/sdk-ts';
+import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle } from 'zapier-platform-core';
-import { apiRequest } from '../client.js';
-import type { ScrapingEntry, SyncResponse } from '../types.js';
+import { withZapierErrors } from '../client.js';
+import { INTEGRATION_NAME } from '../constants.js';
 
 type InputData = {
   url: string;
@@ -14,20 +16,28 @@ type InputData = {
 const perform = async (
   z: ZObject,
   bundle: Bundle<InputData>,
-): Promise<ScrapingEntry> => {
+): Promise<ResultEntry> => {
   const { url, markdown, headless, geo, device_type } = bundle.inputData;
 
-  const response = await apiRequest<SyncResponse>(z, {
-    path: '/v2/scrape',
-    body: {
-      target: 'universal',
-      url,
-      ...(markdown ? { markdown: true } : {}),
-      ...(headless ? { headless } : {}),
-      ...(geo ? { geo } : {}),
-      ...(device_type ? { device_type } : {}),
+  const params = {
+    target: Target.Universal,
+    url,
+    ...(markdown ? { markdown: true } : {}),
+    ...(headless ? { headless } : {}),
+    ...(geo ? { geo } : {}),
+    ...(device_type ? { device_type } : {}),
+  } as ScrapeRequest;
+
+  const client = new DecodoClient({
+    webScrapingApi: {
+      token: bundle.authData?.token ?? '',
+      integrationHeader: INTEGRATION_NAME,
     },
   });
+
+  const response = await withZapierErrors(z, () =>
+    client.webScrapingApi.scrape(params),
+  );
 
   const result = response.results?.[0];
 
