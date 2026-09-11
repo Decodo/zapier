@@ -3,10 +3,8 @@ import type {
   AfterResponseMiddleware,
   HttpResponse,
 } from 'zapier-platform-core';
-import { INTEGRATION_NAME } from './constants.js';
+import { INTEGRATION_NAME, RETRY_AFTER_SECONDS } from './constants.js';
 import type { ErrorResponse } from './types.js';
-
-const DEFAULT_RETRY_AFTER_SECONDS = 1;
 
 const includeAuthHeader: BeforeRequestMiddleware = (request, _z, bundle) => {
   const token = bundle.authData?.token;
@@ -44,9 +42,7 @@ const apiMessage = (response: HttpResponse): string | undefined => {
 
 const retryAfterSeconds = (response: HttpResponse): number => {
   const header = Number(response.getHeader('retry-after'));
-  return Number.isFinite(header) && header > 0
-    ? header
-    : DEFAULT_RETRY_AFTER_SECONDS;
+  return Number.isFinite(header) && header > 0 ? header : RETRY_AFTER_SECONDS;
 };
 
 const handleApiErrors: AfterResponseMiddleware = (response, z, _bundle) => {

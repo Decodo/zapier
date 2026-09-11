@@ -6,7 +6,7 @@ import {
   ValidationError,
 } from '@decodo/sdk-ts';
 import type { ZObject } from 'zapier-platform-core';
-import { THROTTLE_RETRY_SECONDS } from './constants.js';
+import { RETRY_AFTER_SECONDS } from './constants.js';
 
 export const withZapierErrors = async <T>(
   z: ZObject,
@@ -25,7 +25,7 @@ export const withZapierErrors = async <T>(
       throw new z.errors.ThrottledError(
         error.message ||
           'Decodo is rate limiting this account. Zapier will retry shortly.',
-        THROTTLE_RETRY_SECONDS,
+        RETRY_AFTER_SECONDS,
       );
     }
 
