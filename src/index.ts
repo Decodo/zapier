@@ -4,6 +4,7 @@ import authentication from './authentication.js';
 import { befores, afters } from './middleware.js';
 import scrapeUrl from './creates/scrape-url.js';
 import runSearch from './creates/run-search.js';
+import scrapeUrlList from './creates/scrape-url-list.js';
 
 export default defineApp({
   // This is just shorthand to reference the installed dependencies you have.
@@ -27,6 +28,7 @@ export default defineApp({
   creates: {
     [scrapeUrl.key]: scrapeUrl,
     [runSearch.key]: runSearch,
+    [scrapeUrlList.key]: scrapeUrlList,
   },
 
   resources: {},

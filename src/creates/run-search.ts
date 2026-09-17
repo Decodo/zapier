@@ -3,6 +3,18 @@ import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
 import { createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  AMAZON_DOMAIN_FIELD,
+  AMAZON_QUERY_FIELD,
+  GEO_FIELD,
+  GOOGLE_LOCALE_FIELD,
+  GOOGLE_QUERY_FIELD,
+  PARSE_FIELD,
+  REDDIT_SORT_FIELD,
+  SEARCH_MARKDOWN_FIELD,
+  SEARCH_TARGET_FIELD,
+  SUBREDDIT_FIELD,
+} from '../input-fields.js';
 
 type InputData = {
   target?: string;
@@ -16,41 +28,10 @@ type InputData = {
   domain?: string;
 };
 
-const TARGET_CHOICES = {
-  [Target.GoogleSearch]: 'Google',
-  [Target.AmazonSearch]: 'Amazon',
-  [Target.RedditSubreddit]: 'Reddit',
-};
-
-const REDDIT_SORT_CHOICES = {
-  best: 'Best',
-  hot: 'Hot',
-  new: 'New',
-  rising: 'Rising',
-  top: 'Top',
-};
-
 const subredditUrl = (subreddit: string, sort?: string): string => {
   const base = `https://www.reddit.com/r/${subreddit.trim().replace(/^r\//, '')}`;
 
   return sort ? `${base}/${sort}` : base;
-};
-
-const AMAZON_DOMAIN_FIELD: PlainInputField = {
-  key: 'domain',
-  label: 'Amazon Domain',
-  type: 'string',
-  required: false,
-  helpText:
-    'Which Amazon site to search, for example `co.uk` for amazon.co.uk. Defaults to `com`.',
-};
-
-const GOOGLE_LOCALE_FIELD: PlainInputField = {
-  key: 'locale',
-  label: 'Locale',
-  type: 'string',
-  required: false,
-  helpText: 'Interface language for the search, for example `en-GB`.',
 };
 
 const searchRequest = (inputData: InputData): ScrapeRequest => {
@@ -123,83 +104,19 @@ export default defineCreate({
     perform,
 
     inputFields: [
-      {
-        key: 'target',
-        label: 'Search On',
-        type: 'string',
-        required: true,
-        default: Target.GoogleSearch,
-        choices: TARGET_CHOICES,
-        altersDynamicFields: true,
-        helpText: 'Which site to search.',
-      },
+      SEARCH_TARGET_FIELD,
       (_z: ZObject, bundle: Bundle<InputData>): PlainInputField[] => {
         if (bundle.inputData.target === Target.RedditSubreddit) {
-          return [
-            {
-              key: 'subreddit',
-              label: 'Subreddit',
-              type: 'string',
-              required: true,
-              helpText: 'The subreddit name, for example `nba`.',
-            },
-            {
-              key: 'reddit_sort',
-              label: 'Sort',
-              type: 'string',
-              required: false,
-              choices: REDDIT_SORT_CHOICES,
-              helpText:
-                'How to sort the subreddit posts. Leave empty for the default order.',
-            },
-            {
-              key: 'geo',
-              label: 'Location',
-              type: 'string',
-              required: false,
-              helpText:
-                'Search from a specific country or city, for example `United States`. Leave empty to let Decodo choose.',
-            },
-          ];
+          return [SUBREDDIT_FIELD, REDDIT_SORT_FIELD, GEO_FIELD];
         }
 
         const isAmazon = bundle.inputData.target === Target.AmazonSearch;
 
         return [
-          {
-            key: 'query',
-            label: 'Search Query',
-            type: 'string',
-            required: true,
-            helpText: isAmazon
-              ? 'What to search Amazon for, for example `running shoes`.'
-              : 'What to search Google for.',
-          },
-          {
-            key: 'parse',
-            label: 'Return Structured Results',
-            type: 'boolean',
-            required: false,
-            default: 'yes',
-            helpText:
-              'Return the results parsed into fields instead of raw page content. Best for mapping individual results into later steps.',
-          },
-          {
-            key: 'markdown',
-            label: 'Return Markdown',
-            type: 'boolean',
-            required: false,
-            helpText:
-              'Return clean markdown instead of raw HTML. Only applies when structured results are off.',
-          },
-          {
-            key: 'geo',
-            label: 'Location',
-            type: 'string',
-            required: false,
-            helpText:
-              'Search from a specific country or city, for example `United States`. Leave empty to let Decodo choose.',
-          },
+          isAmazon ? AMAZON_QUERY_FIELD : GOOGLE_QUERY_FIELD,
+          PARSE_FIELD,
+          SEARCH_MARKDOWN_FIELD,
+          GEO_FIELD,
           isAmazon ? AMAZON_DOMAIN_FIELD : GOOGLE_LOCALE_FIELD,
         ];
       },
