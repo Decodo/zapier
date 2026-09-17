@@ -2,6 +2,7 @@ import zapier, { defineApp } from 'zapier-platform-core';
 import packageJson from '../package.json' with { type: 'json' };
 import authentication from './authentication.js';
 import { befores, afters } from './middleware.js';
+import scrapeUrl from './creates/scrape-url.js';
 
 export default defineApp({
   // This is just shorthand to reference the installed dependencies you have.
@@ -22,7 +23,9 @@ export default defineApp({
   searches: {},
 
   // If you want your creates to show up, you better include it here!
-  creates: {},
+  creates: {
+    [scrapeUrl.key]: scrapeUrl,
+  },
 
   resources: {},
 });

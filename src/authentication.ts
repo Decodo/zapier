@@ -1,46 +1,49 @@
+import {
+  AuthenticationError,
+  DecodoError,
+  RateLimitError,
+  Target,
+  TimeoutError,
+} from '@decodo/sdk-ts';
+import type { ScrapeRequest } from '@decodo/sdk-ts';
 import type { ZObject, Bundle, Authentication } from 'zapier-platform-core';
 
-import { BASE_URL } from './constants.js';
+import { createDecodoClient, withZapierErrors } from './client.js';
+import { AUTH_PROBE_URL } from './constants.js';
 
-type Account = {
-  username: string;
-  active: boolean;
-  product?: { name: string; targets: string[] };
-};
+const test = async (z: ZObject, bundle: Bundle): Promise<object> => {
+  const client = createDecodoClient(bundle.authData?.apiKey ?? '');
 
-const test = async (z: ZObject, _bundle: Bundle): Promise<Account> => {
-  const response = await z.request({
-    url: `${BASE_URL}/v1/user/info`,
-    method: 'GET',
+  await withZapierErrors(z, async () => {
+    try {
+      await client.webScrapingApi.scrape({
+        target: Target.Universal,
+        url: AUTH_PROBE_URL,
+      } as ScrapeRequest);
+    } catch (error) {
+      if (
+        error instanceof AuthenticationError ||
+        error instanceof RateLimitError ||
+        error instanceof TimeoutError ||
+        !(error instanceof DecodoError)
+      ) {
+        throw error;
+      }
+
+      // The probe URL cannot be scraped, so any other API error still proves
+      // Decodo accepted the key.
+    }
   });
 
-  const account: Account | undefined = response.data?.data;
-
-  if (!account?.username) {
-    throw new z.errors.Error(
-      'Connected to Decodo, but the account details came back empty. Please contact Decodo support if this keeps happening.',
-      'AuthTestFailed',
-      response.status,
-    );
-  }
-
-  if (account.active === false) {
-    throw new z.errors.Error(
-      `The Decodo account "${account.username}" is inactive. Reactivate it in your Decodo dashboard, then reconnect.`,
-      'InactiveAccount',
-      response.status,
-    );
-  }
-
-  return account;
+  return {};
 };
 
 export default {
   type: 'custom',
   fields: [
     {
-      key: 'token',
-      label: 'API Token',
+      key: 'apiKey',
+      label: 'API Key',
       type: 'password',
       required: true,
       helpText:
@@ -48,5 +51,4 @@ export default {
     },
   ],
   test,
-  connectionLabel: '{{username}}',
 } satisfies Authentication;
