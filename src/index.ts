@@ -3,6 +3,7 @@ import packageJson from '../package.json' with { type: 'json' };
 import authentication from './authentication.js';
 import { befores, afters } from './middleware.js';
 import scrapeUrl from './creates/scrape-url.js';
+import runSearch from './creates/run-search.js';
 
 export default defineApp({
   // This is just shorthand to reference the installed dependencies you have.
@@ -25,6 +26,7 @@ export default defineApp({
   // If you want your creates to show up, you better include it here!
   creates: {
     [scrapeUrl.key]: scrapeUrl,
+    [runSearch.key]: runSearch,
   },
 
   resources: {},
