@@ -1,9 +1,8 @@
-import { DecodoClient, Target } from '@decodo/sdk-ts';
+import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle } from 'zapier-platform-core';
-import { withZapierErrors } from '../client.js';
-import { INTEGRATION_NAME } from '../constants.js';
+import { createDecodoClient, withZapierErrors } from '../client.js';
 
 type InputData = {
   url: string;
@@ -28,12 +27,7 @@ const perform = async (
     ...(device_type ? { device_type } : {}),
   } as ScrapeRequest;
 
-  const client = new DecodoClient({
-    webScrapingApi: {
-      token: bundle.authData?.token ?? '',
-      integrationHeader: INTEGRATION_NAME,
-    },
-  });
+  const client = createDecodoClient(bundle.authData?.apiKey ?? '');
 
   const response = await withZapierErrors(z, () =>
     client.webScrapingApi.scrape(params),

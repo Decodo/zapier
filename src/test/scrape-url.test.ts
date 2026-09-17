@@ -7,7 +7,9 @@ const appTester = zapier.createAppTester(App);
 const mockFetch = vi.fn();
 const originalFetch = globalThis.fetch;
 
-const authData = { token: 'dGVzdDp0ZXN0' };
+const authData = {
+  apiKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+};
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -47,9 +49,9 @@ describe('scrape_url', () => {
 
     const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
 
-    expect(url).toBe('https://scraper-api.decodo.com/v2/scrape');
+    expect(url).toBe('https://data.decodo.com/v1/scrape');
     expect(init.headers).toMatchObject({
-      Authorization: `Basic ${authData.token}`,
+      Authorization: `Bearer ${authData.apiKey}`,
       'x-integration': 'zapier',
     });
     expect(JSON.parse(init.body as string)).toEqual({
@@ -59,11 +61,11 @@ describe('scrape_url', () => {
     });
   });
 
-  it('asks the user to reconnect when the token is rejected', async () => {
+  it('asks the user to reconnect when the api key is rejected', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ message: 'Unauthorized' }, 401));
 
     await expect(perform({ url: 'https://example.com' })).rejects.toThrow(
-      /rejected these credentials/,
+      /rejected this API key/,
     );
   });
 });

@@ -7,15 +7,15 @@ import { INTEGRATION_NAME, RETRY_AFTER_SECONDS } from './constants.js';
 import type { ErrorResponse } from './types.js';
 
 const includeAuthHeader: BeforeRequestMiddleware = (request, _z, bundle) => {
-  const token = bundle.authData?.token;
+  const apiKey = bundle.authData?.apiKey?.trim();
 
-  if (!token) {
+  if (!apiKey) {
     return request;
   }
 
   request.headers = {
     ...request.headers,
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${apiKey}`,
     'x-integration': INTEGRATION_NAME,
   };
 
@@ -25,8 +25,7 @@ const includeAuthHeader: BeforeRequestMiddleware = (request, _z, bundle) => {
 const handleAuthErrors: AfterResponseMiddleware = (response, z, _bundle) => {
   if (response.status === 401 || response.status === 403) {
     throw new z.errors.ExpiredAuthError(
-      'Decodo rejected these credentials. Check your API token in the Decodo ' +
-        'dashboard, then reconnect this account.',
+      'Decodo rejected this API key. Check that the key is correct, then reconnect.',
     );
   }
 

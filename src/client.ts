@@ -1,12 +1,21 @@
 import {
   AuthenticationError,
+  DecodoClient,
   DecodoError,
   RateLimitError,
   TimeoutError,
   ValidationError,
 } from '@decodo/sdk-ts';
 import type { ZObject } from 'zapier-platform-core';
-import { RETRY_AFTER_SECONDS } from './constants.js';
+import { INTEGRATION_NAME, RETRY_AFTER_SECONDS } from './constants.js';
+
+export const createDecodoClient = (apiKey: string): DecodoClient =>
+  new DecodoClient({
+    webScrapingApi: {
+      apiKey: apiKey.trim(),
+      integrationHeader: INTEGRATION_NAME,
+    },
+  });
 
 export const withZapierErrors = async <T>(
   z: ZObject,
@@ -17,7 +26,7 @@ export const withZapierErrors = async <T>(
   } catch (error) {
     if (error instanceof AuthenticationError) {
       throw new z.errors.ExpiredAuthError(
-        'Decodo rejected these credentials. Check your API token in the Decodo dashboard, then reconnect this account.',
+        'Decodo rejected this API key. Check that the key is correct and your Decodo account is active, then reconnect this account.',
       );
     }
 
