@@ -16,6 +16,7 @@ export const HEADLESS_FIELD: PlainInputField = {
   label: 'Headless',
   type: 'string',
   required: false,
+  default: 'html',
   choices: { html: 'HTML', png: 'Screenshot (PNG)' },
   helpText:
     "Load the page in a real browser first. `HTML` runs the page's JavaScript and returns the rendered markup. `Screenshot` returns a PNG image instead. Leave empty to fetch without a browser, which is faster.",
@@ -104,18 +105,24 @@ export const PARSE_FIELD: PlainInputField = {
   type: 'boolean',
   required: false,
   default: 'yes',
+  altersDynamicFields: true,
   helpText:
     'Return the results parsed into fields instead of raw page content. Best for mapping individual results into later steps.',
 };
 
 export const SEARCH_MARKDOWN_FIELD: PlainInputField = {
   ...MARKDOWN_FIELD,
+  default: 'no',
   helpText: `${MARKDOWN_FIELD.helpText} Only applies when structured results are off.`,
 };
 
-export const SEARCH_HEADLESS_FIELD: PlainInputField = {
+export const SEARCH_HEADLESS_FIELD: PlainInputField = HEADLESS_FIELD;
+
+export const SEARCH_HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
   ...HEADLESS_FIELD,
-  helpText: `${HEADLESS_FIELD.helpText} Turn structured results off before using Screenshot.`,
+  choices: { html: 'HTML' },
+  helpText:
+    "Load the page in a real browser first, which runs the page's JavaScript before reading it. Leave empty to fetch without a browser, which is faster. Turn parsed results off to capture a screenshot instead.",
 };
 
 export const SUBREDDIT_FIELD: PlainInputField = {

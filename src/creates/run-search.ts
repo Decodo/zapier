@@ -13,6 +13,7 @@ import {
   PARSE_FIELD,
   REDDIT_SORT_FIELD,
   SEARCH_HEADLESS_FIELD,
+  SEARCH_HEADLESS_RENDER_ONLY_FIELD,
   SEARCH_MARKDOWN_FIELD,
   SEARCH_TARGET_FIELD,
   SUBREDDIT_FIELD,
@@ -72,6 +73,9 @@ const searchRequest = (inputData: InputData): ScrapeRequest => {
   } as ScrapeRequest;
 };
 
+const isOn = (value: unknown): boolean =>
+  value !== false && value !== 'no' && value !== 'false';
+
 const redditRequestUrl = (request: ScrapeRequest): string | undefined =>
   'url' in request && typeof request.url === 'string' ? request.url : undefined;
 
@@ -130,7 +134,9 @@ export default defineCreate({
           isAmazon ? AMAZON_QUERY_FIELD : GOOGLE_QUERY_FIELD,
           PARSE_FIELD,
           SEARCH_MARKDOWN_FIELD,
-          SEARCH_HEADLESS_FIELD,
+          isOn(bundle.inputData.parse)
+            ? SEARCH_HEADLESS_RENDER_ONLY_FIELD
+            : SEARCH_HEADLESS_FIELD,
           GEO_FIELD,
           isAmazon ? AMAZON_DOMAIN_FIELD : GOOGLE_LOCALE_FIELD,
         ];
