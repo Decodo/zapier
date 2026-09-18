@@ -8,8 +8,13 @@ import {
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle } from 'zapier-platform-core';
-import { createDecodoClient, withZapierErrors } from '../client.js';
-import { MAX_URLS_BATCH } from '../constants.js';
+import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  MAX_OUTPUT_BYTES,
+  MAX_URLS_BATCH,
+  REQUEST_TIMEOUT_MS,
+  URL_CONCURRENCY,
+} from '../constants.js';
 import {
   DEVICE_TYPE_FIELD,
   GEO_FIELD,
@@ -18,8 +23,6 @@ import {
   URLS_FIELD,
 } from '../input-fields.js';
 
-// Zapier kills an action at 30s. we will fail our requests under the timeout to keep the run.
-const REQUEST_TIMEOUT_MS = 25_000;
 type InputData = {
   urls?: string[] | string;
   markdown?: boolean;
@@ -41,10 +44,12 @@ type Output = {
   errors: FailedUrl[];
 };
 
+const URL_SEPARATOR = /\s+|,(?=https?:\/\/)/;
+
 const normalizeUrls = (urls: string[] | string | undefined): string[] =>
   (Array.isArray(urls) ? urls : [urls ?? ''])
-    .flatMap((entry) => String(entry).split(/[\n,]/))
-    .map((url) => url.trim())
+    .flatMap((entry) => String(entry).split(URL_SEPARATOR))
+    .map((url) => url.replace(/^,+|,+$/g, ''))
     .filter((url) => url.length > 0);
 
 const requestFor = (url: string, inputData: InputData): ScrapeRequest => {
@@ -65,10 +70,44 @@ const abortWith = (z: ZObject, error: unknown): Promise<never> =>
     throw error;
   });
 
-const failureMessage = (error: unknown): string =>
-  error instanceof DecodoError || error instanceof TimeoutError
-    ? error.message
-    : String(error);
+const failureMessage = (error: unknown): string => {
+  if (error instanceof TimeoutError) {
+    return `Decodo did not respond within ${REQUEST_TIMEOUT_MS / 1000} seconds.`;
+  }
+
+  if (error instanceof DecodoError) {
+    return error.message;
+  }
+
+  const detail = error instanceof Error ? error.message : String(error);
+
+  return `Could not reach Decodo for this URL (${detail}).`;
+};
+
+const mapWithLimit = async <T, R>(
+  items: T[],
+  limit: number,
+  run: (item: T) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = [];
+  let next = 0;
+
+  const worker = async (): Promise<void> => {
+    for (let index = next++; index < items.length; index = next++) {
+      const item = items[index];
+
+      if (item !== undefined) {
+        results[index] = await run(item);
+      }
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker),
+  );
+
+  return results;
+};
 
 const perform = async (
   z: ZObject,
@@ -93,24 +132,24 @@ const perform = async (
     REQUEST_TIMEOUT_MS,
   );
 
-  const outcomes = await Promise.all(
-    urls.map(async (url) => {
-      try {
-        return {
-          url,
-          response: await client.webScrapingApi.scrape(
-            requestFor(url, bundle.inputData),
-          ),
-        };
-      } catch (error) {
-        return { url, error };
-      }
-    }),
-  );
+  const outcomes = await mapWithLimit(urls, URL_CONCURRENCY, async (url) => {
+    try {
+      return {
+        url,
+        response: await client.webScrapingApi.scrape(
+          requestFor(url, bundle.inputData),
+        ),
+      };
+    } catch (error) {
+      return { url, error };
+    }
+  });
 
   const results: ResultEntry[] = [];
   const errors: FailedUrl[] = [];
   let fatal: unknown;
+  let firstError: unknown;
+  let bytes = 0;
 
   for (const outcome of outcomes) {
     if ('error' in outcome) {
@@ -121,29 +160,47 @@ const perform = async (
         fatal ??= outcome.error;
       }
 
+      firstError ??= outcome.error;
+
       errors.push({ url: outcome.url, message: failureMessage(outcome.error) });
       continue;
     }
 
     const result = outcome.response.results?.[0];
 
-    if (result) {
-      results.push(result);
-    } else {
+    if (!result) {
       errors.push({
         url: outcome.url,
-        message: 'Decodo returned no content for this URL.',
+        message:
+          apiMessage(outcome.response) ??
+          'Decodo returned no content for this URL.',
       });
+      continue;
     }
+
+    bytes += JSON.stringify(result).length;
+
+    if (bytes > MAX_OUTPUT_BYTES) {
+      errors.push({
+        url: outcome.url,
+        message:
+          'Scraped, but left out: this run already holds as much content as Zapier can pass to the next step. Scrape fewer URLs per run.',
+      });
+      continue;
+    }
+
+    results.push(result);
   }
 
   if (results.length === 0) {
-    if (fatal) {
-      return abortWith(z, fatal);
+    const cause = fatal ?? firstError;
+
+    if (cause !== undefined) {
+      return abortWith(z, cause);
     }
 
     throw new z.errors.Error(
-      errors[0]?.message ?? 'Decodo returned no content for any of these URLs.',
+      'Decodo returned no content for any of these URLs.',
       'EmptyResult',
       200,
     );

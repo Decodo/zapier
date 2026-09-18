@@ -2,7 +2,8 @@ import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
-import { createDecodoClient, withZapierErrors } from '../client.js';
+import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import { REQUEST_TIMEOUT_MS } from '../constants.js';
 import {
   AMAZON_DOMAIN_FIELD,
   AMAZON_QUERY_FIELD,
@@ -11,6 +12,7 @@ import {
   GOOGLE_QUERY_FIELD,
   PARSE_FIELD,
   REDDIT_SORT_FIELD,
+  SEARCH_HEADLESS_FIELD,
   SEARCH_MARKDOWN_FIELD,
   SEARCH_TARGET_FIELD,
   SUBREDDIT_FIELD,
@@ -23,6 +25,7 @@ type InputData = {
   reddit_sort?: string;
   parse?: boolean;
   markdown?: boolean;
+  headless?: string;
   geo?: string;
   locale?: string;
   domain?: string;
@@ -42,6 +45,7 @@ const searchRequest = (inputData: InputData): ScrapeRequest => {
     reddit_sort,
     parse,
     markdown,
+    headless,
     geo,
     locale,
     domain,
@@ -61,33 +65,43 @@ const searchRequest = (inputData: InputData): ScrapeRequest => {
     query,
     ...(parse ? { parse: true } : {}),
     ...(markdown ? { markdown: true } : {}),
+    ...(headless ? { headless } : {}),
     ...(geo ? { geo } : {}),
     ...(target === Target.GoogleSearch && locale ? { locale } : {}),
     ...(target === Target.AmazonSearch && domain ? { domain } : {}),
   } as ScrapeRequest;
 };
 
+const redditRequestUrl = (request: ScrapeRequest): string | undefined =>
+  'url' in request && typeof request.url === 'string' ? request.url : undefined;
+
 const perform = async (
   z: ZObject,
   bundle: Bundle<InputData>,
 ): Promise<ResultEntry> => {
-  const client = createDecodoClient(bundle.authData?.apiKey ?? '');
+  const request = searchRequest(bundle.inputData);
+
+  const client = createDecodoClient(
+    bundle.authData?.apiKey ?? '',
+    REQUEST_TIMEOUT_MS,
+  );
 
   const response = await withZapierErrors(z, () =>
-    client.webScrapingApi.scrape(searchRequest(bundle.inputData)),
+    client.webScrapingApi.scrape(request),
   );
 
   const result = response.results?.[0];
 
   if (!result) {
     throw new z.errors.Error(
-      'Decodo returned no results for this search. Try a different query, or run it without parsing to see the raw page.',
+      apiMessage(response) ??
+        'Decodo returned no results for this search. Try a different query, or run it without parsing to see the raw page.',
       'EmptyResult',
       200,
     );
   }
 
-  return result;
+  return result.url ? result : { ...result, url: redditRequestUrl(request) };
 };
 
 export default defineCreate({
@@ -116,6 +130,7 @@ export default defineCreate({
           isAmazon ? AMAZON_QUERY_FIELD : GOOGLE_QUERY_FIELD,
           PARSE_FIELD,
           SEARCH_MARKDOWN_FIELD,
+          SEARCH_HEADLESS_FIELD,
           GEO_FIELD,
           isAmazon ? AMAZON_DOMAIN_FIELD : GOOGLE_LOCALE_FIELD,
         ];
@@ -126,13 +141,37 @@ export default defineCreate({
       task_id: '7238940912345678901',
       url: 'https://www.google.com/search?q=web+scraping',
       status_code: 200,
-      content: '# Web Scraping\n\n1. https://example.com - Example Domain',
+      content: {
+        results: {
+          page: 1,
+          last_visible_page: 9,
+          parse_status_code: 12000,
+          url: 'https://www.google.com/search?q=web+scraping',
+          results: {
+            organic: [
+              {
+                pos: 1,
+                pos_overall: 1,
+                title: 'Example Domain',
+                url: 'https://example.com',
+                url_shown: 'https://example.com',
+                desc: 'This domain is for use in documentation examples.',
+              },
+            ],
+            search_information: {
+              query: 'web scraping',
+              showing_results_for: 'web scraping',
+              total_results_count: 0,
+            },
+            total_results_count: 0,
+          },
+        },
+      },
       created_at: '2026-09-17 12:00:00',
       updated_at: '2026-09-17 12:00:04',
     },
 
     outputFields: [
-      { key: 'content', label: 'Content' },
       { key: 'url', label: 'URL' },
       { key: 'status_code', label: 'Status Code', type: 'integer' },
       { key: 'task_id', label: 'Task ID' },

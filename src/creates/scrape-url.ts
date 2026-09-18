@@ -2,7 +2,8 @@ import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle } from 'zapier-platform-core';
-import { createDecodoClient, withZapierErrors } from '../client.js';
+import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import { REQUEST_TIMEOUT_MS } from '../constants.js';
 import {
   DEVICE_TYPE_FIELD,
   GEO_FIELD,
@@ -34,7 +35,10 @@ const perform = async (
     ...(device_type ? { device_type } : {}),
   } as ScrapeRequest;
 
-  const client = createDecodoClient(bundle.authData?.apiKey ?? '');
+  const client = createDecodoClient(
+    bundle.authData?.apiKey ?? '',
+    REQUEST_TIMEOUT_MS,
+  );
 
   const response = await withZapierErrors(z, () =>
     client.webScrapingApi.scrape(params),
@@ -44,7 +48,8 @@ const perform = async (
 
   if (!result) {
     throw new z.errors.Error(
-      'Decodo returned no content for this URL. The page may be empty or the request may have been blocked.',
+      apiMessage(response) ??
+        'Decodo returned no content for this URL. The page may be empty or the request may have been blocked.',
       'EmptyResult',
       200,
     );

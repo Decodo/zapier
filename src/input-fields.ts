@@ -50,7 +50,7 @@ export const URLS_FIELD: PlainInputField = {
   type: 'string',
   required: true,
   list: true,
-  helpText: `The pages to scrape, up to ${MAX_URLS_BATCH} per run.`,
+  helpText: `The pages to scrape, up to ${MAX_URLS_BATCH} per run. Add one full URL per row, or map a comma-separated list of full URLs from an earlier step.`,
 };
 
 export const URL_FIELD: PlainInputField = {
@@ -100,7 +100,7 @@ export const AMAZON_QUERY_FIELD: PlainInputField = {
 
 export const PARSE_FIELD: PlainInputField = {
   key: 'parse',
-  label: 'Return Structured Results',
+  label: 'Return Parsed Results',
   type: 'boolean',
   required: false,
   default: 'yes',
@@ -113,12 +113,18 @@ export const SEARCH_MARKDOWN_FIELD: PlainInputField = {
   helpText: `${MARKDOWN_FIELD.helpText} Only applies when structured results are off.`,
 };
 
+export const SEARCH_HEADLESS_FIELD: PlainInputField = {
+  ...HEADLESS_FIELD,
+  helpText: `${HEADLESS_FIELD.helpText} Turn structured results off before using Screenshot.`,
+};
+
 export const SUBREDDIT_FIELD: PlainInputField = {
   key: 'subreddit',
   label: 'Subreddit',
   type: 'string',
   required: true,
-  helpText: 'The subreddit name, for example `nba`.',
+  helpText:
+    'The subreddit name on its own, without `r/` or the full Reddit address. For example `nba`.',
 };
 
 export const REDDIT_SORT_FIELD: PlainInputField = {
