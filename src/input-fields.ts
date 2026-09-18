@@ -2,6 +2,11 @@ import { Target } from '@decodo/sdk-ts';
 import type { PlainInputField } from 'zapier-platform-core';
 import { MAX_URLS_BATCH } from './constants.js';
 
+export const isOn = (value: unknown, whenUnset: boolean): boolean =>
+  value === undefined
+    ? whenUnset
+    : value !== false && value !== 'no' && value !== 'false';
+
 const MARKDOWN_FIELD: PlainInputField = {
   key: 'markdown',
   label: 'Return Markdown',
@@ -43,6 +48,7 @@ export const DEVICE_TYPE_FIELD: PlainInputField = {
 export const SCRAPE_MARKDOWN_FIELD: PlainInputField = {
   ...MARKDOWN_FIELD,
   default: 'yes',
+  altersDynamicFields: true,
 };
 
 export const URLS_FIELD: PlainInputField = {
@@ -113,16 +119,14 @@ export const PARSE_FIELD: PlainInputField = {
 export const SEARCH_MARKDOWN_FIELD: PlainInputField = {
   ...MARKDOWN_FIELD,
   default: 'no',
-  helpText: `${MARKDOWN_FIELD.helpText} Only applies when structured results are off.`,
+  altersDynamicFields: true,
 };
 
-export const SEARCH_HEADLESS_FIELD: PlainInputField = HEADLESS_FIELD;
-
-export const SEARCH_HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
+export const HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
   ...HEADLESS_FIELD,
   choices: { html: 'HTML' },
   helpText:
-    "Load the page in a real browser first, which runs the page's JavaScript before reading it. Leave empty to fetch without a browser, which is faster. Turn parsed results off to capture a screenshot instead.",
+    "Load the page in a real browser first, which runs the page's JavaScript before reading it. Leave empty to fetch without a browser, which is faster. Turn markdown and parsed results off to capture a screenshot instead.",
 };
 
 export const SUBREDDIT_FIELD: PlainInputField = {

@@ -1,13 +1,15 @@
 import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
-import type { ZObject, Bundle } from 'zapier-platform-core';
+import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
 import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
 import { REQUEST_TIMEOUT_MS } from '../constants.js';
 import {
   DEVICE_TYPE_FIELD,
   GEO_FIELD,
   HEADLESS_FIELD,
+  HEADLESS_RENDER_ONLY_FIELD,
+  isOn,
   SCRAPE_MARKDOWN_FIELD,
   URL_FIELD,
 } from '../input-fields.js';
@@ -26,11 +28,15 @@ const perform = async (
 ): Promise<ResultEntry> => {
   const { url, markdown, headless, geo, device_type } = bundle.inputData;
 
+  const asMarkdown = markdown ?? true;
+
+  const renderMode = asMarkdown && headless === 'png' ? 'html' : headless;
+
   const params = {
     target: Target.Universal,
     url,
-    ...(markdown ? { markdown: true } : {}),
-    ...(headless ? { headless } : {}),
+    ...(asMarkdown ? { markdown: true } : {}),
+    ...(renderMode ? { headless: renderMode } : {}),
     ...(geo ? { geo } : {}),
     ...(device_type ? { device_type } : {}),
   } as ScrapeRequest;
@@ -74,9 +80,13 @@ export default defineCreate({
     inputFields: [
       URL_FIELD,
       SCRAPE_MARKDOWN_FIELD,
-      HEADLESS_FIELD,
-      GEO_FIELD,
-      DEVICE_TYPE_FIELD,
+      (_z: ZObject, bundle: Bundle<InputData>): PlainInputField[] => [
+        isOn(bundle.inputData.markdown, true)
+          ? HEADLESS_RENDER_ONLY_FIELD
+          : HEADLESS_FIELD,
+        GEO_FIELD,
+        DEVICE_TYPE_FIELD,
+      ],
     ],
 
     sample: {
