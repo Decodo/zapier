@@ -3,9 +3,16 @@ import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle } from 'zapier-platform-core';
 import { createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  DEVICE_TYPE_FIELD,
+  GEO_FIELD,
+  HEADLESS_FIELD,
+  SCRAPE_MARKDOWN_FIELD,
+  URL_FIELD,
+} from '../input-fields.js';
 
 type InputData = {
-  url: string;
+  url?: string;
   markdown?: boolean;
   headless?: string;
   geo?: string;
@@ -60,47 +67,11 @@ export default defineCreate({
     perform,
 
     inputFields: [
-      {
-        key: 'url',
-        label: 'URL',
-        type: 'string',
-        required: true,
-        helpText: 'The full address of the page to scrape.',
-      },
-      {
-        key: 'markdown',
-        label: 'Return Markdown',
-        type: 'boolean',
-        required: false,
-        default: 'yes',
-        helpText:
-          'Return clean markdown instead of raw HTML. Best for feeding the result to an AI step.',
-      },
-      {
-        key: 'headless',
-        label: 'Headless',
-        type: 'string',
-        required: false,
-        choices: { html: 'HTML', png: 'Screenshot (PNG)' },
-        helpText:
-          "Load the page in a real browser first. `HTML` runs the page's JavaScript and returns the rendered markup. `Screenshot` returns a PNG image instead. Leave empty to fetch without a browser, which is faster.",
-      },
-      {
-        key: 'geo',
-        label: 'Location',
-        type: 'string',
-        required: false,
-        helpText:
-          'Scrape from a specific country or city, for example `United States`. Leave empty to let Decodo choose.',
-      },
-      {
-        key: 'device_type',
-        label: 'Device Type',
-        type: 'string',
-        required: false,
-        choices: { desktop: 'Desktop', mobile: 'Mobile' },
-        helpText: 'Which device the page should be requested as.',
-      },
+      URL_FIELD,
+      SCRAPE_MARKDOWN_FIELD,
+      HEADLESS_FIELD,
+      GEO_FIELD,
+      DEVICE_TYPE_FIELD,
     ],
 
     sample: {

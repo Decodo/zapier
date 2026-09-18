@@ -9,12 +9,16 @@ import {
 import type { ZObject } from 'zapier-platform-core';
 import { INTEGRATION_NAME, RETRY_AFTER_SECONDS } from './constants.js';
 
-export const createDecodoClient = (apiKey: string): DecodoClient =>
+export const createDecodoClient = (
+  apiKey: string,
+  timeoutMs?: number,
+): DecodoClient =>
   new DecodoClient({
     webScrapingApi: {
       apiKey: apiKey.trim(),
       integrationHeader: INTEGRATION_NAME,
     },
+    ...(timeoutMs ? { timeoutMs } : {}),
   });
 
 export const withZapierErrors = async <T>(
