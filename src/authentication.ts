@@ -9,10 +9,11 @@ import type { ScrapeRequest } from '@decodo/sdk-ts';
 import type { ZObject, Bundle, Authentication } from 'zapier-platform-core';
 
 import { createDecodoClient, withZapierErrors } from './client.js';
-import { AUTH_PROBE_URL } from './constants.js';
+import { AUTH_PROBE_URL, KEY_HINT_LENGTH } from './constants.js';
 
 const test = async (z: ZObject, bundle: Bundle): Promise<object> => {
-  const client = createDecodoClient(bundle.authData?.apiKey ?? '');
+  const apiKey = (bundle.authData?.apiKey ?? '').trim();
+  const client = createDecodoClient(apiKey);
 
   await withZapierErrors(z, async () => {
     try {
@@ -35,7 +36,7 @@ const test = async (z: ZObject, bundle: Bundle): Promise<object> => {
     }
   });
 
-  return {};
+  return { key_hint: apiKey.slice(-KEY_HINT_LENGTH) };
 };
 
 export default {
@@ -50,5 +51,6 @@ export default {
         'Find this in your [Decodo dashboard](https://dashboard.decodo.com) under your Web Scraping API subscription.',
     },
   ],
+  connectionLabel: 'API key …{{bundle.inputData.key_hint}}',
   test,
 } satisfies Authentication;

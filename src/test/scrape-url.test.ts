@@ -61,6 +61,21 @@ describe('scrape_url', () => {
     });
   });
 
+  it('passes on the reason when decodo could not scrape the page', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        status: 'failed',
+        status_code: 613,
+        message: 'We were not able to scrape the target.',
+        task_id: '123',
+      }),
+    );
+
+    await expect(perform({ url: 'https://example.com' })).rejects.toThrow(
+      /We were not able to scrape the target/,
+    );
+  });
+
   it('asks the user to reconnect when the api key is rejected', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ message: 'Unauthorized' }, 401));
 

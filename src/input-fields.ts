@@ -2,6 +2,11 @@ import { Target } from '@decodo/sdk-ts';
 import type { PlainInputField } from 'zapier-platform-core';
 import { MAX_URLS_BATCH } from './constants.js';
 
+export const isOn = (value: unknown, whenUnset: boolean): boolean =>
+  value === undefined
+    ? whenUnset
+    : value !== false && value !== 'no' && value !== 'false';
+
 const MARKDOWN_FIELD: PlainInputField = {
   key: 'markdown',
   label: 'Return Markdown',
@@ -16,6 +21,7 @@ export const HEADLESS_FIELD: PlainInputField = {
   label: 'Headless',
   type: 'string',
   required: false,
+  default: 'html',
   choices: { html: 'HTML', png: 'Screenshot (PNG)' },
   helpText:
     "Load the page in a real browser first. `HTML` runs the page's JavaScript and returns the rendered markup. `Screenshot` returns a PNG image instead. Leave empty to fetch without a browser, which is faster.",
@@ -42,6 +48,7 @@ export const DEVICE_TYPE_FIELD: PlainInputField = {
 export const SCRAPE_MARKDOWN_FIELD: PlainInputField = {
   ...MARKDOWN_FIELD,
   default: 'yes',
+  altersDynamicFields: true,
 };
 
 export const URLS_FIELD: PlainInputField = {
@@ -50,7 +57,7 @@ export const URLS_FIELD: PlainInputField = {
   type: 'string',
   required: true,
   list: true,
-  helpText: `The pages to scrape, up to ${MAX_URLS_BATCH} per run.`,
+  helpText: `The pages to scrape, up to ${MAX_URLS_BATCH} per run. Add one full URL per row, or map a comma-separated list of full URLs from an earlier step.`,
 };
 
 export const URL_FIELD: PlainInputField = {
@@ -100,17 +107,26 @@ export const AMAZON_QUERY_FIELD: PlainInputField = {
 
 export const PARSE_FIELD: PlainInputField = {
   key: 'parse',
-  label: 'Return Structured Results',
+  label: 'Return Parsed Results',
   type: 'boolean',
   required: false,
   default: 'yes',
+  altersDynamicFields: true,
   helpText:
     'Return the results parsed into fields instead of raw page content. Best for mapping individual results into later steps.',
 };
 
 export const SEARCH_MARKDOWN_FIELD: PlainInputField = {
   ...MARKDOWN_FIELD,
-  helpText: `${MARKDOWN_FIELD.helpText} Only applies when structured results are off.`,
+  default: 'no',
+  altersDynamicFields: true,
+};
+
+export const HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
+  ...HEADLESS_FIELD,
+  choices: { html: 'HTML' },
+  helpText:
+    "Load the page in a real browser first, which runs the page's JavaScript before reading it. Leave empty to fetch without a browser, which is faster. Turn markdown and parsed results off to capture a screenshot instead.",
 };
 
 export const SUBREDDIT_FIELD: PlainInputField = {
@@ -118,7 +134,8 @@ export const SUBREDDIT_FIELD: PlainInputField = {
   label: 'Subreddit',
   type: 'string',
   required: true,
-  helpText: 'The subreddit name, for example `nba`.',
+  helpText:
+    'The subreddit name on its own, without `r/` or the full Reddit address. For example `nba`.',
 };
 
 export const REDDIT_SORT_FIELD: PlainInputField = {

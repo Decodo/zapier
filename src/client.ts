@@ -21,6 +21,14 @@ export const createDecodoClient = (
     ...(timeoutMs ? { timeoutMs } : {}),
   });
 
+export const apiMessage = (response: unknown): string | undefined => {
+  const message = (response as { message?: unknown } | null)?.message;
+
+  return typeof message === 'string' && message.trim().length > 0
+    ? message
+    : undefined;
+};
+
 export const withZapierErrors = async <T>(
   z: ZObject,
   run: () => Promise<T>,
