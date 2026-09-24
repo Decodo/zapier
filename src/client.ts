@@ -6,6 +6,7 @@ import {
   TimeoutError,
   ValidationError,
 } from '@decodo/sdk-ts';
+import type { ResultEntry } from '@decodo/sdk-ts';
 import type { ZObject } from 'zapier-platform-core';
 import { INTEGRATION_NAME, RETRY_AFTER_SECONDS } from './constants.js';
 
@@ -20,6 +21,22 @@ export const createDecodoClient = (
     },
     ...(timeoutMs ? { timeoutMs } : {}),
   });
+
+const API_TIMESTAMP = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+// Decodo returns UTC timestamps without an offset, and Zapier requires ISO 8601 with one.
+const toIsoTimestamp = (value: string): string =>
+  API_TIMESTAMP.test(value) ? `${value.replace(' ', 'T')}Z` : value;
+
+export const withIsoTimestamps = (result: ResultEntry): ResultEntry => ({
+  ...result,
+  ...(result.created_at
+    ? { created_at: toIsoTimestamp(result.created_at) }
+    : {}),
+  ...(result.updated_at
+    ? { updated_at: toIsoTimestamp(result.updated_at) }
+    : {}),
+});
 
 export const apiMessage = (response: unknown): string | undefined => {
   const message = (response as { message?: unknown } | null)?.message;
@@ -60,7 +77,7 @@ export const withZapierErrors = async <T>(
 
     if (error instanceof TimeoutError) {
       throw new z.errors.Error(
-        'Decodo took too long to respond. Try again, or scrape without a browser to speed it up.',
+        'Decodo took too long to respond. Try again, or turn off Headless to speed it up.',
         'DecodoTimeout',
         504,
       );

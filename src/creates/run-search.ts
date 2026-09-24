@@ -2,7 +2,12 @@ import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
-import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  apiMessage,
+  createDecodoClient,
+  withIsoTimestamps,
+  withZapierErrors,
+} from '../client.js';
 import { REQUEST_TIMEOUT_MS } from '../constants.js';
 import {
   AMAZON_DOMAIN_FIELD,
@@ -41,7 +46,7 @@ const subredditUrl = (subreddit: string, sort?: string): string => {
 
 const searchRequest = (inputData: InputData): ScrapeRequest => {
   const {
-    target = Target.GoogleSearch,
+    target: selectedTarget,
     query,
     subreddit,
     reddit_sort,
@@ -53,6 +58,8 @@ const searchRequest = (inputData: InputData): ScrapeRequest => {
     domain,
   } = inputData;
 
+  const target = selectedTarget || Target.GoogleSearch;
+
   if (target === Target.RedditSubreddit) {
     return {
       target,
@@ -62,8 +69,8 @@ const searchRequest = (inputData: InputData): ScrapeRequest => {
     } as ScrapeRequest;
   }
 
-  const parsed = parse ?? true;
-  const asMarkdown = !parsed && Boolean(markdown);
+  const parsed = isOn(parse, true);
+  const asMarkdown = !parsed && isOn(markdown, false);
 
   const renderMode =
     headless === 'png' && (parsed || asMarkdown) ? 'html' : headless;
@@ -109,7 +116,9 @@ const perform = async (
     );
   }
 
-  return result.url ? result : { ...result, url: redditRequestUrl(request) };
+  const entry = withIsoTimestamps(result);
+
+  return entry.url ? entry : { ...entry, url: redditRequestUrl(request) };
 };
 
 export default defineCreate({
@@ -119,7 +128,7 @@ export default defineCreate({
   display: {
     label: 'Run Search',
     description:
-      'Searches Google, Amazon, or a subreddit and returns the results as structured data, markdown, or HTML.',
+      'Runs a search on the selected site and returns the results as structured data, markdown, or HTML.',
   },
 
   operation: {
@@ -150,14 +159,14 @@ export default defineCreate({
 
     sample: {
       task_id: '7238940912345678901',
-      url: 'https://www.google.com/search?q=web+scraping',
+      url: 'https://www.google.com/search?q=coffee+shops',
       status_code: 200,
       content: {
         results: {
           page: 1,
           last_visible_page: 9,
           parse_status_code: 12000,
-          url: 'https://www.google.com/search?q=web+scraping',
+          url: 'https://www.google.com/search?q=coffee+shops',
           results: {
             organic: [
               {
@@ -170,16 +179,16 @@ export default defineCreate({
               },
             ],
             search_information: {
-              query: 'web scraping',
-              showing_results_for: 'web scraping',
+              query: 'coffee shops',
+              showing_results_for: 'coffee shops',
               total_results_count: 0,
             },
             total_results_count: 0,
           },
         },
       },
-      created_at: '2026-09-17 12:00:00',
-      updated_at: '2026-09-17 12:00:04',
+      created_at: '2026-09-17T12:00:00Z',
+      updated_at: '2026-09-17T12:00:04Z',
     },
 
     outputFields: [
