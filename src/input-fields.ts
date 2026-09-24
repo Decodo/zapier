@@ -3,13 +3,13 @@ import type { PlainInputField } from 'zapier-platform-core';
 import { MAX_URLS_BATCH } from './constants.js';
 
 export const isOn = (value: unknown, whenUnset: boolean): boolean =>
-  value === undefined
+  value === undefined || value === null || value === ''
     ? whenUnset
     : value !== false && value !== 'no' && value !== 'false';
 
 const MARKDOWN_FIELD: PlainInputField = {
   key: 'markdown',
-  label: 'Return Markdown',
+  label: 'Return markdown',
   type: 'boolean',
   required: false,
   helpText:
@@ -38,7 +38,7 @@ export const GEO_FIELD: PlainInputField = {
 
 export const DEVICE_TYPE_FIELD: PlainInputField = {
   key: 'device_type',
-  label: 'Device Type',
+  label: 'Device type',
   type: 'string',
   required: false,
   choices: { desktop: 'Desktop', mobile: 'Mobile' },
@@ -57,7 +57,7 @@ export const URLS_FIELD: PlainInputField = {
   type: 'string',
   required: true,
   list: true,
-  helpText: `The pages to scrape, up to ${MAX_URLS_BATCH} per run. Add one full URL per row, or map a comma-separated list of full URLs from an earlier step.`,
+  helpText: `The pages to fetch, up to ${MAX_URLS_BATCH} per run. Add one full URL per row, or map a comma-separated list of full URLs from an earlier step.`,
 };
 
 export const URL_FIELD: PlainInputField = {
@@ -65,7 +65,7 @@ export const URL_FIELD: PlainInputField = {
   label: 'URL',
   type: 'string',
   required: true,
-  helpText: 'The full address of the page to scrape.',
+  helpText: 'The full address of the page to fetch.',
 };
 
 const TARGET_CHOICES = {
@@ -94,20 +94,20 @@ export const SEARCH_TARGET_FIELD: PlainInputField = {
 
 export const GOOGLE_QUERY_FIELD: PlainInputField = {
   key: 'query',
-  label: 'Search Query',
+  label: 'Search query',
   type: 'string',
   required: true,
-  helpText: 'What to search Google for.',
+  helpText: 'What to search for.',
 };
 
 export const AMAZON_QUERY_FIELD: PlainInputField = {
   ...GOOGLE_QUERY_FIELD,
-  helpText: 'What to search Amazon for, for example `running shoes`.',
+  helpText: 'What to search for, for example `running shoes`.',
 };
 
 export const PARSE_FIELD: PlainInputField = {
   key: 'parse',
-  label: 'Return Parsed Results',
+  label: 'Return parsed results',
   type: 'boolean',
   required: false,
   default: 'yes',
@@ -135,7 +135,7 @@ export const SUBREDDIT_FIELD: PlainInputField = {
   type: 'string',
   required: true,
   helpText:
-    'The subreddit name on its own, without `r/` or the full Reddit address. For example `nba`.',
+    'The subreddit name on its own, without `r/` or the full address. For example `nba`.',
 };
 
 export const REDDIT_SORT_FIELD: PlainInputField = {
@@ -150,11 +150,11 @@ export const REDDIT_SORT_FIELD: PlainInputField = {
 
 export const AMAZON_DOMAIN_FIELD: PlainInputField = {
   key: 'domain',
-  label: 'Amazon Domain',
+  label: 'Domain',
   type: 'string',
   required: false,
   helpText:
-    'Which Amazon site to search, for example `co.uk` for amazon.co.uk. Defaults to `com`.',
+    'Which regional site to search, for example `co.uk`. Defaults to `com`.',
 };
 
 export const GOOGLE_LOCALE_FIELD: PlainInputField = {

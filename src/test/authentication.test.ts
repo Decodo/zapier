@@ -34,7 +34,7 @@ describe('custom auth', () => {
   it('probes the api with the key', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ results: [] }));
 
-    await expect(test()).resolves.toEqual({ key_hint: 'cdef' });
+    await expect(test()).resolves.toEqual({});
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
 
@@ -50,15 +50,13 @@ describe('custom auth', () => {
       jsonResponse({ message: 'Could not resolve host' }, 500),
     );
 
-    await expect(test()).resolves.toEqual({ key_hint: 'cdef' });
+    await expect(test()).resolves.toEqual({});
   });
 
   it('trims a pasted key', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ results: [] }));
 
-    await expect(test(`  ${authData.apiKey}  `)).resolves.toEqual({
-      key_hint: 'cdef',
-    });
+    await expect(test(`  ${authData.apiKey}  `)).resolves.toEqual({});
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
 
@@ -67,16 +65,8 @@ describe('custom auth', () => {
     });
   });
 
-  it('labels the connection with the last four characters only', async () => {
-    mockFetch.mockResolvedValue(jsonResponse({ results: [] }));
-
-    const { key_hint } = (await test()) as { key_hint: string };
-
-    expect(key_hint).toHaveLength(4);
-    expect(authData.apiKey.endsWith(key_hint)).toBe(true);
-    expect(App.authentication.connectionLabel).toBe(
-      'API key \u2026{{bundle.inputData.key_hint}}',
-    );
+  it('does not put any part of the key in a connection label', () => {
+    expect(App.authentication).not.toHaveProperty('connectionLabel');
   });
 
   it('asks the user to reconnect when the key is rejected', async () => {

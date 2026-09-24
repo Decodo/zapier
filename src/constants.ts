@@ -4,8 +4,6 @@ export const RETRY_AFTER_SECONDS = 1;
 
 export const AUTH_PROBE_URL = 'https://does-not-exist.decodo.com';
 
-export const KEY_HINT_LENGTH = 4;
-
 export const MAX_URLS_BATCH = 25;
 
 export const URL_CONCURRENCY = 10;

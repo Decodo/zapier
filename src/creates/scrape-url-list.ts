@@ -8,7 +8,12 @@ import {
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
-import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  apiMessage,
+  createDecodoClient,
+  withIsoTimestamps,
+  withZapierErrors,
+} from '../client.js';
 import {
   MAX_OUTPUT_BYTES,
   MAX_URLS_BATCH,
@@ -57,7 +62,7 @@ const normalizeUrls = (urls: string[] | string | undefined): string[] =>
 const requestFor = (url: string, inputData: InputData): ScrapeRequest => {
   const { markdown, headless, geo, device_type } = inputData;
 
-  const asMarkdown = markdown ?? true;
+  const asMarkdown = isOn(markdown, true);
 
   const renderMode = asMarkdown && headless === 'png' ? 'html' : headless;
 
@@ -122,12 +127,12 @@ const perform = async (
   const urls = normalizeUrls(bundle.inputData.urls);
 
   if (urls.length === 0) {
-    throw new z.errors.Error('Add at least one URL to scrape.', 'NoUrls', 400);
+    throw new z.errors.Error('Add at least one URL to fetch.', 'NoUrls', 400);
   }
 
   if (urls.length > MAX_URLS_BATCH) {
     throw new z.errors.Error(
-      `This action scrapes at most ${MAX_URLS_BATCH} URLs per run, and this list has ${urls.length} urls. Split the list across several runs.`,
+      `This action fetches at most ${MAX_URLS_BATCH} URLs per run, and this list has ${urls.length} URLs. Split the list across several runs.`,
       'TooManyUrls',
       400,
     );
@@ -190,12 +195,12 @@ const perform = async (
       errors.push({
         url: outcome.url,
         message:
-          'Scraped, but left out: this run already holds as much content as Zapier can pass to the next step. Scrape fewer URLs per run.',
+          'Fetched, but left out: this run already holds as much content as Zapier can pass to the next step. Fetch fewer URLs per run.',
       });
       continue;
     }
 
-    results.push(result);
+    results.push(withIsoTimestamps(result));
   }
 
   if (results.length === 0) {
@@ -226,9 +231,9 @@ export default defineCreate({
   noun: 'Page List',
 
   display: {
-    label: 'Scrape URL List',
+    label: 'Fetch URL List',
     description:
-      'Scrapes a list of URLs at the same time and returns the content of each.',
+      'Fetches a list of URLs at the same time and returns the content of each.',
   },
 
   operation: {
@@ -256,16 +261,16 @@ export default defineCreate({
           url: 'https://example.com',
           status_code: 200,
           content: '# Example Domain',
-          created_at: '2026-09-17 12:00:00',
-          updated_at: '2026-09-17 12:00:04',
+          created_at: '2026-09-17T12:00:00Z',
+          updated_at: '2026-09-17T12:00:04Z',
         },
         {
           task_id: '7238940912345678902',
           url: 'https://example.org',
           status_code: 200,
           content: '# Example Org',
-          created_at: '2026-09-17 12:00:00',
-          updated_at: '2026-09-17 12:00:05',
+          created_at: '2026-09-17T12:00:00Z',
+          updated_at: '2026-09-17T12:00:05Z',
         },
       ],
       errors: [],
@@ -273,7 +278,7 @@ export default defineCreate({
 
     outputFields: [
       { key: 'requested', label: 'URLs Requested', type: 'integer' },
-      { key: 'scraped', label: 'URLs Scraped', type: 'integer' },
+      { key: 'scraped', label: 'URLs Fetched', type: 'integer' },
       { key: 'failed', label: 'URLs Failed', type: 'integer' },
       { key: 'results[]content', label: 'Content' },
       { key: 'results[]url', label: 'URL' },

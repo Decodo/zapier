@@ -6,11 +6,11 @@ and bot protection. Use it to pull web pages and search results into Zaps withou
 
 ## Actions
 
-| Action              | What it does                                                                            |
-| ------------------- | --------------------------------------------------------------------------------------- |
-| **Scrape URL**      | Scrapes one page and returns it as markdown, raw HTML, or a screenshot.                 |
-| **Scrape URL List** | Scrapes up to 25 URLs in one run and returns the content of each, plus any that failed. |
-| **Run Search**      | Searches Google, Amazon, or a subreddit and returns structured results or page content. |
+| Action             | What it does                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| **Fetch URL**      | Scrapes one page and returns it as markdown, raw HTML, or a screenshot.                 |
+| **Fetch URL List** | Scrapes up to 25 URLs in one run and returns the content of each, plus any that failed. |
+| **Run Search**     | Searches Google, Amazon, or a subreddit and returns structured results or page content. |
 
 Shared options are markdown output, headless browser rendering (rendered HTML or a PNG screenshot),
 location, and device type. Which ones apply depends on the action and, for searches, on the target.
@@ -25,7 +25,7 @@ yet? [Start a free trial](https://dashboard.decodo.com/).
 ## Good to know
 
 - Zapier stops an action after 30 seconds, so a scrape that takes longer fails rather than hanging.
-- **Scrape URL List** takes at most 25 URLs per run and scrapes 10 at a time. A run returns as much
+- **Fetch URL List** takes at most 25 URLs per run and scrapes 10 at a time. A run returns as much
   content as Zapier can pass to the next step; anything beyond that is reported in the failure list
   rather than silently dropped.
 - A run that scrapes some URLs and fails others still counts as a success, so check the failure count

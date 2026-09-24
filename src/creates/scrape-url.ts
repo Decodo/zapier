@@ -2,7 +2,12 @@ import { Target } from '@decodo/sdk-ts';
 import type { ResultEntry, ScrapeRequest } from '@decodo/sdk-ts';
 import { defineCreate } from 'zapier-platform-core';
 import type { ZObject, Bundle, PlainInputField } from 'zapier-platform-core';
-import { apiMessage, createDecodoClient, withZapierErrors } from '../client.js';
+import {
+  apiMessage,
+  createDecodoClient,
+  withIsoTimestamps,
+  withZapierErrors,
+} from '../client.js';
 import { REQUEST_TIMEOUT_MS } from '../constants.js';
 import {
   DEVICE_TYPE_FIELD,
@@ -28,7 +33,7 @@ const perform = async (
 ): Promise<ResultEntry> => {
   const { url, markdown, headless, geo, device_type } = bundle.inputData;
 
-  const asMarkdown = markdown ?? true;
+  const asMarkdown = isOn(markdown, true);
 
   const renderMode = asMarkdown && headless === 'png' ? 'html' : headless;
 
@@ -61,7 +66,7 @@ const perform = async (
     );
   }
 
-  return result;
+  return withIsoTimestamps(result);
 };
 
 export default defineCreate({
@@ -69,9 +74,9 @@ export default defineCreate({
   noun: 'Page',
 
   display: {
-    label: 'Scrape URL',
+    label: 'Fetch URL',
     description:
-      'Scrapes a web page and returns its content as markdown, HTML, or parsed data.',
+      'Fetches a web page and returns its content as markdown, HTML, or a screenshot.',
   },
 
   operation: {
@@ -94,8 +99,8 @@ export default defineCreate({
       url: 'https://example.com',
       status_code: 200,
       content: '# Example Domain\n\nThis domain is for use in examples.',
-      created_at: '2026-09-04 12:00:00',
-      updated_at: '2026-09-04 12:00:04',
+      created_at: '2026-09-04T12:00:00Z',
+      updated_at: '2026-09-04T12:00:04Z',
     },
 
     outputFields: [

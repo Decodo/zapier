@@ -61,6 +61,37 @@ describe('scrape_url', () => {
     });
   });
 
+  it('treats an empty markdown field as the default', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({ results: [{ content: '# Example Domain' }] }),
+    );
+
+    await perform({ url: 'https://example.com', markdown: '' });
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+
+    expect(JSON.parse(init.body as string).markdown).toBe(true);
+  });
+
+  it('returns timestamps in ISO 8601 with an offset', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        results: [
+          {
+            content: '# Example Domain',
+            created_at: '2026-09-04 12:00:00',
+            updated_at: '2026-09-04 12:00:04',
+          },
+        ],
+      }),
+    );
+
+    const result = await perform({ url: 'https://example.com' });
+
+    expect(result.created_at).toBe('2026-09-04T12:00:00Z');
+    expect(result.updated_at).toBe('2026-09-04T12:00:04Z');
+  });
+
   it('passes on the reason when decodo could not scrape the page', async () => {
     mockFetch.mockResolvedValue(
       jsonResponse({
