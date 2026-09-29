@@ -13,6 +13,10 @@ export default defineApp({
 
   authentication,
 
+  flags: {
+    cleanInputData: true,
+  },
+
   // If you want your trigger to show up, you better include it here!
   triggers: {},
 
