@@ -1,10 +1,10 @@
 # Decodo Zapier integration
 
 <p align="center">
-  <a href="https://dashboard.decodo.com/scrapers/pricing?utm_source=github&utm_medium=social&utm_campaign=zapier"><img src="https://github.com/user-attachments/assets/13b08523-32b0-4c85-8e99-580d7c2a9055" alt="Decodo Web Scraping API" /></a>
+  <a href="https://dashboard.decodo.com/scrapers/pricing?utm_source=github&utm_medium=social&utm_campaign=zapier"><img src="https://github.com/user-attachments/assets/13b08523-32b0-4c85-8e99-580d7c2a9055" alt="Decodo Web Data API" /></a>
 </p>
 
-Connect the Decodo [Web Scraping API](https://decodo.com/scraping/web) to
+Connect the Decodo [Web Data API](https://decodo.com/scraping/web) to
 [Zapier](https://zapier.com/) to fetch web pages, scrape Google search results, and scrape
 Amazon product data from search results. Pass page content or structured data to the next step
 in your Zap, with no code required.
@@ -13,7 +13,7 @@ The integration provides three actions backed by the same API. Decodo handles pr
 JavaScript rendering, and bot protection so you can build web scraping automation around the
 data you need. Retrieval still depends on the target page and the action's time limit.
 
-Test your target and settings in the Decodo [Playground](https://dashboard.decodo.com/playground)
+Test your target and settings in the Decodo [Playground](https://dashboard.decodo.com/web-data/playground)
 before building a Zap. The options exposed in Zapier are listed below.
 
 ## Actions
@@ -56,7 +56,7 @@ page content, then choose HTML, Markdown, or a screenshot.
 ## Quick start
 
 1. **Create an account** on the Decodo [dashboard](https://dashboard.decodo.com/).
-2. **Copy your Web Scraping API key** from your Web Scraping API subscription. In the Decodo dashboard, this credential is labelled as the Basic authentication token.
+2. **Copy your Web Data API key** from your Web Data API subscription on the dashboard.
 3. **Add a Decodo action to your Zap** after your chosen trigger. Select **Fetch URL**,
    **Fetch URL List**, or **Run Search**, then connect your account using the API key.
 4. **Configure the action** with a URL, a URL list, a Google or Amazon search query, or a
@@ -66,7 +66,7 @@ page content, then choose HTML, Markdown, or a screenshot.
 
 ## Authentication
 
-The integration uses a Web Scraping API key from your subscription on the Decodo
+The integration uses a Web Data API key from your subscription on the Decodo
 [dashboard](https://dashboard.decodo.com/). Enter it in the **API Key** field when connecting
 your Decodo account in Zapier.
 
@@ -117,7 +117,7 @@ batch limits in `src/constants.ts`.
 
 ## Resources
 
-- [Web Scraping API documentation](https://help.decodo.com/docs/web-scraping-api-introduction)
+- [Web Data API documentation](https://help.decodo.com/docs/web-data-api-introduction)
 - [Decodo dashboard](https://dashboard.decodo.com/)
 - [Decodo Discord](https://discord.gg/Ja8dqKgvbZ)
 - [Decodo CLI](https://github.com/Decodo/cli) & [MCP server](https://github.com/Decodo/mcp-server)
