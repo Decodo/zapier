@@ -1,7 +1,7 @@
 # Decodo Zapier integration
 
 <p align="center">
-  <a href="https://dashboard.decodo.com/scrapers/pricing?utm_source=github&utm_medium=social&utm_campaign=zapier"><img src="https://github.com/user-attachments/assets/13b08523-32b0-4c85-8e99-580d7c2a9055" alt="Decodo Web Data API" /></a>
+  <a href="https://dashboard.decodo.com/web-data/pricing?utm_source=github&utm_medium=social&utm_campaign=zapier"><img src="https://github.com/user-attachments/assets/233d4e4e-8f64-4179-a32e-a4b9cf78137f" alt="Decodo Web Data API" /></a>
 </p>
 
 Connect the Decodo [Web Data API](https://decodo.com/scraping/web) to
