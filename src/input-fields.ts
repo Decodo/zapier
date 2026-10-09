@@ -69,30 +69,22 @@ export const URL_FIELD: PlainInputField = {
 };
 
 const TARGET_CHOICES = {
-  [Target.GoogleSearch]: 'Google',
-  [Target.AmazonSearch]: 'Amazon',
-  [Target.RedditSubreddit]: 'Reddit',
-};
-
-const REDDIT_SORT_CHOICES = {
-  hot: 'Hot',
-  new: 'New',
-  rising: 'Rising',
-  top: 'Top',
+  [Target.GoogleSearch]: 'Search SERP',
+  [Target.AmazonSearch]: 'Search E-Commerce',
 };
 
 export const SEARCH_TARGET_FIELD: PlainInputField = {
   key: 'target',
-  label: 'Search On',
+  label: 'Search Type',
   type: 'string',
   required: true,
   default: Target.GoogleSearch,
   choices: TARGET_CHOICES,
   altersDynamicFields: true,
-  helpText: 'Which site to search.',
+  helpText: 'The kind of search to run.',
 };
 
-export const GOOGLE_QUERY_FIELD: PlainInputField = {
+export const SERP_QUERY_FIELD: PlainInputField = {
   key: 'query',
   label: 'Search query',
   type: 'string',
@@ -100,8 +92,8 @@ export const GOOGLE_QUERY_FIELD: PlainInputField = {
   helpText: 'What to search for.',
 };
 
-export const AMAZON_QUERY_FIELD: PlainInputField = {
-  ...GOOGLE_QUERY_FIELD,
+export const ECOMMERCE_QUERY_FIELD: PlainInputField = {
+  ...SERP_QUERY_FIELD,
   helpText: 'What to search for, for example `running shoes`.',
 };
 
@@ -122,6 +114,11 @@ export const SEARCH_MARKDOWN_FIELD: PlainInputField = {
   altersDynamicFields: true,
 };
 
+export const SEARCH_HEADLESS_FIELD: PlainInputField = {
+  ...HEADLESS_FIELD,
+  default: undefined,
+};
+
 export const HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
   ...HEADLESS_FIELD,
   choices: { html: 'HTML' },
@@ -129,26 +126,7 @@ export const HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
     "Load the page in a real browser first, which runs the page's JavaScript before reading it. Leave empty to fetch without a browser, which is faster. Turn markdown and parsed results off to capture a screenshot instead.",
 };
 
-export const SUBREDDIT_FIELD: PlainInputField = {
-  key: 'subreddit',
-  label: 'Subreddit',
-  type: 'string',
-  required: true,
-  helpText:
-    'The subreddit name on its own, without `r/` or the full address. For example `nba`.',
-};
-
-export const REDDIT_SORT_FIELD: PlainInputField = {
-  key: 'reddit_sort',
-  label: 'Sort',
-  type: 'string',
-  required: false,
-  choices: REDDIT_SORT_CHOICES,
-  helpText:
-    'How to sort the subreddit posts. Leave empty for the default order.',
-};
-
-export const AMAZON_DOMAIN_FIELD: PlainInputField = {
+export const ECOMMERCE_DOMAIN_FIELD: PlainInputField = {
   key: 'domain',
   label: 'Domain',
   type: 'string',
@@ -157,10 +135,15 @@ export const AMAZON_DOMAIN_FIELD: PlainInputField = {
     'Which regional site to search, for example `co.uk`. Defaults to `com`.',
 };
 
-export const GOOGLE_LOCALE_FIELD: PlainInputField = {
+export const SERP_LOCALE_FIELD: PlainInputField = {
   key: 'locale',
   label: 'Locale',
   type: 'string',
   required: false,
   helpText: 'Interface language for the search, for example `en-GB`.',
+};
+
+export const SEARCH_HEADLESS_RENDER_ONLY_FIELD: PlainInputField = {
+  ...HEADLESS_RENDER_ONLY_FIELD,
+  default: undefined,
 };

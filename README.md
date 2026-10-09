@@ -5,8 +5,8 @@
 </p>
 
 Connect the Decodo [Web Data API](https://decodo.com/scraping/web) to
-[Zapier](https://zapier.com/) to fetch web pages, scrape Google search results, and scrape
-Amazon product data from search results. Pass page content or structured data to the next step
+[Zapier](https://zapier.com/) to fetch web pages, run SERP searches, and run
+e-commerce searches. Pass page content or structured data to the next step
 in your Zap, with no code required.
 
 The integration provides three actions backed by the same API. Decodo handles proxy rotation,
@@ -22,29 +22,25 @@ before building a Zap. The options exposed in Zapier are listed below.
 | --- | --- |
 | **Fetch URL** | Scrapes one page and returns Markdown, HTML, or a PNG screenshot. |
 | **Fetch URL List** | Scrapes up to 25 URLs per run and returns each page's content, plus counts and failure details. |
-| **Run Search** | Returns parsed Google or Amazon search results, page content, or posts from a specified subreddit. |
+| **Run Search** | Runs a SERP or e-commerce search and returns parsed results or page content. |
 
 **Fetch URL** and **Fetch URL List** return Markdown by default. Both expose location, device
 type, and headless rendering settings. Choose rendered HTML to read content that appears after
 JavaScript runs, or turn Markdown off to capture a screenshot.
 
-**Run Search** exposes different settings for each target:
+**Run Search** exposes different settings for each search type:
 
-| Target | Required input | Optional settings |
+| Search type | Required input | Optional settings |
 | --- | --- | --- |
-| Google | Search query | Parsed results, Markdown, headless rendering, location, and locale |
-| Amazon | Search query | Parsed results, Markdown, headless rendering, location, and regional domain |
-| Reddit | Subreddit name | Post sorting and location |
+| Search SERP | Search query | Parsed results, Markdown, headless rendering, location, and locale |
+| Search E-Commerce | Search query | Parsed results, Markdown, headless rendering, location, and regional domain |
 
-The Reddit option fetches a subreddit rather than running a keyword search. It does not expose
-parsing, Markdown, or headless rendering settings.
-
-Google and Amazon return parsed results by default. Turn **Return parsed results** off to get
+Search SERP and Search E-Commerce return parsed results by default. Turn **Return parsed results** off to get
 page content, then choose HTML, Markdown, or a screenshot.
 
 ## Example workflows
 
-- **Search results in Google Sheets**. Use Run Search to collect Google or Amazon results, then
+- **Search results in a spreadsheet**. Use Run Search to collect SERP or e-commerce results, then
   map the returned fields into spreadsheet rows.
 - **Web content for an AI step**. Fetch a page as Markdown and pass its content to a summarization
   or analysis step.
@@ -59,8 +55,7 @@ page content, then choose HTML, Markdown, or a screenshot.
 2. **Copy your Web Data API key** from your Web Data API subscription on the dashboard.
 3. **Add a Decodo action to your Zap** after your chosen trigger. Select **Fetch URL**,
    **Fetch URL List**, or **Run Search**, then connect your account using the API key.
-4. **Configure the action** with a URL, a URL list, a Google or Amazon search query, or a
-   subreddit name. Choose the output and any additional settings you need.
+4. **Configure the action** with a URL, a URL list, or a search query. Choose the output and any additional settings you need.
 5. **Test the step and inspect the result**, then map the returned data into your next Zap step.
    For URL lists, check the failure count and reasons as well as the fetched content.
 
@@ -84,10 +79,10 @@ dashboard and reconnect the account.
 - **Partial success**. A URL list run with at least one returned result counts as a success.
   Check `scraped`, `failed`, and `errors` before processing `results`. A run with no returned
   results fails.
-- **Search output**. Google and Amazon support parsed results and headless rendering. Markdown
-  applies only when parsed results are off. These settings are not exposed for subreddits.
+- **Search output**. Both search types support parsed results and headless rendering. Markdown
+  applies only when parsed results are off.
 - **Screenshots**. A screenshot returns a PNG in place of page content. Turn Markdown off for
-  either URL action. For Google or Amazon, turn both parsed results and Markdown off, then
+  either URL action. For a search, turn both parsed results and Markdown off, then
   select **Screenshot (PNG)** under **Headless**.
 - **Actions only**. The integration provides actions, with no triggers. Choose a trigger from
   another app or use a Zapier schedule to start your workflow.

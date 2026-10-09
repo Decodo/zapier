@@ -48,7 +48,7 @@ export default {
       type: 'password',
       required: true,
       helpText:
-        'Find this in your [Decodo dashboard](https://dashboard.decodo.com) under your Web Scraping API subscription.',
+        'Find this in your [Decodo dashboard](https://dashboard.decodo.com) under your Web Data API subscription.',
     },
   ],
   test,
