@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { changelogEntry } from './changelog-entry.js';
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 
@@ -26,23 +27,30 @@ const changedFiles = changed.filter(
 const dependenciesChanged =
   JSON.stringify(before.dependencies) !== JSON.stringify(after.dependencies);
 
-if (changedFiles.length === 0 && !dependenciesChanged) {
+const codeChanged = changedFiles.length > 0 || dependenciesChanged;
+const versionChanged = after.version !== before.version;
+
+if (!codeChanged && !versionChanged) {
   console.log('No integration code changed, version bump not required.');
   process.exit(0);
 }
 
 if (!isGreater(after.version, before.version)) {
   console.error(
-    `Integration code changed but package.json version ${after.version} is not above ${before.version}. ` +
+    `package.json version ${after.version} is not above ${before.version}. ` +
       'Bump it and push that version to Zapier.',
   );
+  [
+    ...changedFiles,
+    ...(dependenciesChanged ? ['package.json dependencies'] : []),
+  ].forEach((file) => console.error(`  ${file}`));
+  process.exit(1);
+}
+
+if (!/^(?!#)\S/m.test(changelogEntry(after.version) ?? '')) {
   console.error(
-    [
-      ...changedFiles,
-      ...(dependenciesChanged ? ['package.json dependencies'] : []),
-    ]
-      .map((file) => `  ${file}`)
-      .join('\n'),
+    `CHANGELOG.md has no entry for ${after.version}, or the entry has no text. ` +
+      'zapier-platform promote needs one, and Zapier shows it to users.',
   );
   process.exit(1);
 }
