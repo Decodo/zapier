@@ -8,6 +8,12 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+  },
+  {
     rules: {
       curly: ['error', 'all'],
       quotes: ['error', 'single', { avoidEscape: true }],
