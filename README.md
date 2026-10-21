@@ -108,6 +108,15 @@ and do not require a Decodo API key. Use `npm run format` to apply formatting to
 The actions live in `src/creates/`, their input fields in `src/input-fields.ts`, and request and
 batch limits in `src/constants.ts`.
 
+### Releasing
+
+1. Bump `version` in `package.json` and add a matching `## <version>` entry to `CHANGELOG.md`.
+   Zapier shows the entry to users. PR CI fails if code changed without both.
+2. Run `npx zapier-platform push` and test the private version in Zapier.
+3. Merge the PR. CI pushes the version again from `main`, promotes it so new Zaps use it,
+   and creates the `v<version>` GitHub Release.
+4. Move existing Zaps over when ready: `npx zapier-platform migrate <old> <new> <percent>`.
+
 </details>
 
 ## Resources

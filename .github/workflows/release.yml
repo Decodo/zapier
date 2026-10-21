@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Detect version change
+        id: version
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          previous=$(git show "$BEFORE:package.json" | node -p "JSON.parse(require('fs').readFileSync(0)).version")
+
+          if [ "$version" = "$previous" ]; then
+            echo "Version unchanged at $version, nothing to release."
+          elif git rev-parse -q --verify "refs/tags/v$version" > /dev/null; then
+            echo "v$version is already tagged, nothing to release."
+          else
+            echo "Releasing $previous → $version."
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.version.outputs.version
+        run: npm ci
+
+      - name: Test
+        if: steps.version.outputs.version
+        run: npm test
+
+      - name: Validate
+        if: steps.version.outputs.version
+        run: npx zapier-platform validate --without-style
+
+      - name: Push to Zapier
+        if: steps.version.outputs.version
+        env:
+          ZAPIER_DEPLOY_KEY: ${{ secrets.ZAPIER_DEPLOY_KEY }}
+        run: npx zapier-platform push
+
+      # promote exits 0 without promoting when Zapier answers with a go-public
+      # request form, so success is read from its output.
+      - name: Promote
+        if: steps.version.outputs.version
+        env:
+          ZAPIER_DEPLOY_KEY: ${{ secrets.ZAPIER_DEPLOY_KEY }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -o pipefail
+          npx zapier-platform promote "$VERSION" --yes | tee promote.log
+          grep -q 'Promotion successful' promote.log
+
+      - name: GitHub Release
+        if: steps.version.outputs.version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node scripts/changelog-entry.js "$VERSION" > notes.md
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --notes-file notes.md
